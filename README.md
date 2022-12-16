@@ -1,23 +1,27 @@
 # Benchmark_scRNA_scATAC_integration_methods
 Methods are benchmarked in 3 general big steps
-- Process before dimension redction
+- Gene activity estimation 
 - Dimension reduction
-- Labelling
-## Evaluation of conversion of chromatin accessibility to gene expression: Gene activity score
-four method:
+- Clustering
+
+Three paired multiomic data is used to evaluate the performance of the Methods at different stages. At each stage, conduct the available approaches, evaluate the results using certain evaluation matrices for that stage.
+## Evaluation of Gene activity score
+### There are 5 options to calculate gene activity:
 1. signac
-2. LIGER
+2. liger
 3. Cicero
 4. MAESTRO
+5. Unpair_reg
 ### evaluation measurements
 1. Correlation to the RNA measurament
 2. PCA the GAS, SI of cell types
-3. Anchor finding in seurat
+3. RMSE
  
  ## Evaluation of common space 
+ ### There are
+ ### evaluation measurements
  1. celltype SI
- 2. celltype cell to self distance
- 3. celltype findself in 100NN
+ 2. Distribution of distance to self
  
  ## Evaluate labelling 
  ### Is seuart cca anchor is better?
