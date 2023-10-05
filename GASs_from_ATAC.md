@@ -101,47 +101,56 @@ bmmc.rna <- read10X(sample.dirs = list("/path_to_sample"), sample.names = list("
 ```
 ### cicero
 ```r
-# download and unzip
-temp <- tempfile()
-download.file("ftp://ftp.ensembl.org/pub/release-65/gtf/mus_musculus/Mus_musculus.NCBIM37.65.gtf.gz", temp)
-gene_anno <- rtracklayer::readGFF(temp)
-unlink(temp)
+library(Seurat)
+library(monocle3)
+library(cicero)
+library(Signac)
+library(stringr)
 
-# rename some columns to match requirements
-# input_cds
 # read in matrix data using the Matrix package
-indata <- Matrix::readMM("filtered_peak_bc_matrix/matrix.mtx") 
+inputdata.10x <- Read10X_h5("/data2/duren_lab/naqing/data/MouseBrain/e18_mouse_brain_fresh_5k_filtered_feature_bc_matrix.h5")
+indata<-inputdata.10x$Peaks
+
 # binarize the matrix
 indata@x[indata@x > 0] <- 1
 
-# format cell info
-cellinfo <- read.table("filtered_peak_bc_matrix/barcodes.tsv")
+# peankinfo (rows) and cellinfo (columns) used to make a cds object_crucial to calculate GAS
+# 1 cellinfo
+cellinfo <- data.frame(colnames(indata))
+colnames(cellinfo)='V1'
 row.names(cellinfo) <- cellinfo$V1
 names(cellinfo) <- "cells"
 
+#2 peak info
 # format peak info
-peakinfo <- read.table("filtered_peak_bc_matrix/peaks.bed")
+peakinfo=indata@Dimnames[[1]]
+peakinfo1=unlist(str_split(peakinfo,':'))
+chr0=peakinfo1[(1:length(peakinfo))*2-1]
+peakinfo3=unlist(str_split(peakinfo1[(1:length(peakinfo))*2],'-'))
+start0=peakinfo3[(1:length(peakinfo))*2-1]
+end0=peakinfo3[(1:length(peakinfo))*2]
+peakinfo=cbind(chr0,start0,end0)
+peakinfo=data.frame(peakinfo)
 names(peakinfo) <- c("chr", "bp1", "bp2")
 peakinfo$site_name <- paste(peakinfo$chr, peakinfo$bp1, peakinfo$bp2, sep="_")
 row.names(peakinfo) <- peakinfo$site_name
 row.names(indata) <- row.names(peakinfo)
-colnames(indata) <- row.names(cellinfo)
 
 # make CDS
-input_cds <-  suppressWarnings(new_cell_data_set(indata,
-cell_metadata = cellinfo,
-gene_metadata = peakinfo))
+input_cds <-  suppressWarnings(new_cell_data_set(indata,cell_metadata = cellinfo, gene_metadata = peakinfo))
 
+#saved 
+#input_cds <- readRDS("/data/duren_lab/naqing/Methods_Benchmark/Cicero/input_cds.rds")
 input_cds <- monocle3::detect_genes(input_cds)
-
-#Ensure there are no peaks included with zero reads
-input_cds <- input_cds[Matrix::rowSums(exprs(input_cds)) != 0,] 
+input_cds <- input_cds[Matrix::rowSums(exprs(input_cds)) != 0,] #Ensure there are no peaks included with zero reads
 
 #gene_anno
+gene_anno<-readRDS("/data2/duren_lab/naqing/Methods_Benchmark/Cicero/gene_anno_Mus_musculus.GRCm39.110.rds")
 gene_anno$chromosome <- paste0("chr", gene_anno$seqid)
 gene_anno$gene <- gene_anno$gene_id
 gene_anno$transcript <- gene_anno$transcript_id
 gene_anno$symbol <- gene_anno$gene_name
+
 #### Add a column for the pData table indicating the gene if a peak is a promoter ####
 # Create a gene annotation set that only marks the transcription start sites of 
 # the genes. We use this as a proxy for promoters.
@@ -167,27 +176,13 @@ gene_annotation_sub <- gene_annotation_sub[,c("chromosome", "start", "end", "sym
 
 # Rename the gene symbol column to "gene"
 names(gene_annotation_sub)[4] <- "gene"
-
+#gene_annotation_sub<- readRDS("/data/duren_lab/naqing/Methods_Benchmark/Cicero/gene_annotation_sub.rds")
 input_cds <- annotate_cds_by_site(input_cds, gene_annotation_sub)
 
-tail(fData(input_cds))
-# DataFrame with 6 rows and 7 columns
-#                                 site_name         chr       bp1       bp2
-#                                  <factor> <character> <numeric> <numeric>
-# chrY_590469_590895     chrY_590469_590895           Y    590469    590895
-# chrY_609312_609797     chrY_609312_609797           Y    609312    609797
-# chrY_621772_623366     chrY_621772_623366           Y    621772    623366
-# chrY_631222_631480     chrY_631222_631480           Y    631222    631480
-# chrY_795887_796426     chrY_795887_796426           Y    795887    796426
-# chrY_2397419_2397628 chrY_2397419_2397628           Y   2397419   2397628
-#                      num_cells_expressed   overlap        gene
-#                                <integer> <integer> <character>
-# chrY_590469_590895                     5        NA          NA
-# chrY_609312_609797                     7        NA          NA
-# chrY_621772_623366                   106         2       Ddx3y
-# chrY_631222_631480                     2        NA          NA
-# chrY_795887_796426                     1         2       Usp9y
-# chrY_2397419_2397628                   4        NA          NA
+
+# make conn
+mm10<-readRDS("/data2/duren_lab/naqing/Methods_Benchmark/Cicero/mm10.rds")
+conns <- run_cicero(input_cds,mm10) 
 
 #### Generate gene activity scores ####
 # generate unnormalized gene activity matrix
@@ -203,16 +198,10 @@ names(num_genes) <- row.names(pData(input_cds))
 
 # normalize
 cicero_gene_activities <- normalize_gene_activities(unnorm_ga, num_genes)
-
-# if you had two datasets to normalize, you would pass both:
-# num_genes should then include all cells from both sets
-unnorm_ga2 <- unnorm_ga
-cicero_gene_activities <- normalize_gene_activities(list(unnorm_ga, unnorm_ga2), 
-                                                    num_genes)
+saveRDS(cicero_gene_activities,"/data2/duren_lab/naqing/Benchmark_mouse_brain/GAS/cicero_GAS.rds")
 ```
 ### Maestro
 ```r
-
 inputdata.10x <- Read10X_h5("/data/duren_lab/naqing/data/pbmc_10k/pbmc_granulocyte_sorted_10k_filtered_feature_bc_matrix.h5")
 atac_counts <- inputdata.10x$Peaks
 pbmc.ATAC.RP.res <- ATACCalculateGenescore(inputMat = atac_counts)
