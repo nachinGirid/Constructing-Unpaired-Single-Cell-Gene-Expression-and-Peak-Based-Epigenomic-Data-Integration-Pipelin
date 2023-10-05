@@ -12,24 +12,8 @@ library(rliger)
 ```r
 #load the data
 counts1 <- Read10X_h5("/data/duren_lab/naqing/data/pbmc_10k/pbmc_granulocyte_sorted_10k_filtered_feature_bc_matrix.h5")
-# create a Seurat object containing the RNA adata
-pbmc.rna <- CreateSeuratObject(
-  counts = counts1$`Gene Expression`,
-  assay = "RNA"
-)
-#standard RNA analysis
-pbmc.rna<- NormalizeData(pbmc.rna)
-pbmc.rna <- FindVariableFeatures(pbmc.rna)
-pbmc.rna <- ScaleData(pbmc.rna)
-pbmc.rna <- RunPCA(pbmc.rna)
-pbmc.rna <- RunUMAP(pbmc.rna, dims = 1:30)
-#load peak information
-counts <- Matrix::readMM('matrix_filted_1.mtx')
-PeakName=read.table('PeakName.txt',header=FALSE)
-barcode=read.table("/data/duren_lab/naqing/data/pbmc_10k/filtered_feature_bc_matrix/barcodes.tsv",header=FALSE)
-rownames(counts)=PeakName$V1
-colnames(counts)=barcode$V1
-### read in premade annotation(code to generate is below)
+counts=counts1$Peaks
+### pre-made annotation
 # annotation <- GetGRangesFromEnsDb(ensdb = EnsDb.Hsapiens.v86)
 # seqlevelsStyle(annotation) <- "UCSC"
 # genome(annotation) <- "hg38"
@@ -41,7 +25,6 @@ chrom_assay <- CreateChromatinAssay(
   min.cells = 0,
   min.features = 0,
 )
-#ATAC
 pbmc.atac <- CreateSeuratObject(
   counts = chrom_assay,
   assay = "peaks"
@@ -51,22 +34,6 @@ pbmc.atac <- RunTFIDF(pbmc.atac)
 pbmc.atac <- FindTopFeatures(pbmc.atac, min.cutoff = 'q0')
 pbmc.atac <- RunSVD(pbmc.atac)
 gene.activities <- GeneActivity(pbmc.atac)
-```
-*only on pbmc data*
-```r
-#filter cells
-barcode_use<-read.table("/data/duren_lab/naqing/data/pbmc_10k/barcode_use.txt")
-barcode<-pbmc.rna@assays$RNA@counts@Dimnames[[2]]
-idx<-match(barcode_use$V1,barcode)
-pbmc.rna<-pbmc.rna[,idx]
-barcode1<-pbmc.atac@assays$peaks@counts@Dimnames[[2]]
-idx1<-match(barcode_use$V1,barcode1)
-pbmc.atac<-pbmc.atac[,idx1]
-# pre_made annotations for hg38
-#annotations<-readRDS("/data/duren_lab/naqing/Methods_Benchmark/annotations_EnsDb.Hsapiens.v86.RDS")
-load("/data/duren_lab/Kaya/Unpair/application/pbmc/anno_hg38.RData")
-
-#gene.activities <- GeneActivity(pbmc.atac)
 ```
 ### LIGER
 bash
