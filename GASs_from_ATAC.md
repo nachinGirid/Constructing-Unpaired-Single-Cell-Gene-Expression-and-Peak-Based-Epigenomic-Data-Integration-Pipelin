@@ -169,7 +169,11 @@ saveRDS(cicero_gene_activities,"/data2/duren_lab/naqing/Benchmark_mouse_brain/GA
 ```
 ### Maestro
 ```r
-inputdata.10x <- Read10X_h5("/data/duren_lab/naqing/data/pbmc_10k/pbmc_granulocyte_sorted_10k_filtered_feature_bc_matrix.h5")
+library(Seurat)
+library(MAESTRO)
+inputdata.10x <- Read10X_h5("/data2/duren_lab/naqing/data/HumanBrain/human_brain_3k_filtered_feature_bc_matrix.h5")
 atac_counts <- inputdata.10x$Peaks
-pbmc.ATAC.RP.res <- ATACCalculateGenescore(inputMat = atac_counts)
+library(reticulate)
+use_python("/data2/duren_lab/naqing/conda_envs/r-reticulate/bin/python", required = TRUE)
+maestro_GAS<-ATACCalculateGenescore(inputMat = atac_counts)
 ```
