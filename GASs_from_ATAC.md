@@ -113,6 +113,7 @@ input_cds <- input_cds[Matrix::rowSums(exprs(input_cds)) != 0,] #Ensure there ar
 
 #gene_anno
 gene_anno <- rtracklayer::readGFF("/data2/duren_lab/naqing/Methods_Benchmark/Cicero/gencode.vM25.annotation.gtf.gz")
+gene_anno$chromosome <- gene_anno$seqid
 gene_anno$gene <- gene_anno$gene_id
 gene_anno$transcript <- gene_anno$transcript_id
 gene_anno$symbol <- gene_anno$gene_name
