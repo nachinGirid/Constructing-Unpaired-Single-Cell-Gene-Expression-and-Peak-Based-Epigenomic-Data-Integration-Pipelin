@@ -66,7 +66,7 @@ lst<-set_common_gene(Gene_Exp,GASs)
 saveRDS(lst,"/data2/duren_lab/naqing/pipeline_building/Gene_Activity_Score/results/common_gene_GASs/mousebrain_Exp_GAS_lst.rds")
 ```
 ## Evaluation
-This part of the script starts to evaluate the gene activity scores with common genes using 3 evaluation matrices.
+This part of the script starts to evaluate the gene activity scores with common genes using 3 evaluation matrices.  
 **Function and library**
 ```r
 source("/data2/duren_lab/naqing/pipeline_building/functions/Func_GAS_eval.r")
@@ -140,6 +140,9 @@ for(i in 1:4){
     LNC2[i,]<-LNC(Exp2,GAS_list2[[i]],block=20)
     LNC3[i,]<-LNC(Exp3,GAS_list3[[i]],block=20)
 }
+```
+Fill in empty tables with LNC results
+```r
 # Save evaluation results
 LNC_tables={}
 LNC_tables$LNC1<-LNC1
