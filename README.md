@@ -1,4 +1,6 @@
 # Benchmark_scRNA_scATAC_integration_methods
+___________________________________________________________________________________________________________________________________________________________________________
+## Overview
 ### Methods are benchmarked in 3 major steps
 - Gene activity estimation 
 - Dimension reduction
