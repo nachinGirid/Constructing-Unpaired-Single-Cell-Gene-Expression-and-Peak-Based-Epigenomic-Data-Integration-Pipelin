@@ -26,6 +26,8 @@ Here is an [example script](https://github.com/nachinGirid/Benchmark_scRNA_scATA
 2. **Local neighborhood consistency (LNC)** of each cell's scRNA-seq profile and GAS profile.
 3. **Cell-type Average Silhouette width (ASW)** of each cell type on PCA reduced embedding of GAS profile.
 4. **Normalized correlation** of group-wise gene expression and GAS.
+
+[Script for GAS evaluation](https://github.com/nachinGirid/Benchmark_scRNA_scATAC_integration_methods/blob/main/gene_activity_score_evaluation.md)
 ___________________________________________________________________________________________________________________________________________________________________________
 ## 2.Dimension reduction
 #### Methods for Dimension Reduction
