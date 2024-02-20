@@ -20,6 +20,7 @@ We have benchmarked 4 gene activity calculating methods each representing differ
 3.  _build_gene_activity_matrix_ Function implemented in Cicero for monocle3 (1.3.9)   [Tutorial](https://cole-trapnell-lab.github.io/cicero-release/docs_m3/#cicero-gene-activity-scores)
 4.  _ATACCalculateGenescore_ Function implemented in MAESTRO R Package(1.5.1) [directly followed the description of the function](https://github.com/liulab-dfci/MAESTRO/blob/master/R/ATACCalculateGenescore.R)
 
+Here is an [example script](https://github.com/nachinGirid/Benchmark_scRNA_scATAC_integration_methods/blob/main/gene_acitivity_score_calculate_example.md) for making the gene activity scores using these methods. (pbmc data as an example)
 #### Evaluation metrics for gene activity score
 1. **Pearson correlation coefficient (PCC)** of each gene's scRNA-seq data and GAS data.
 2. **Local neighborhood consistency (LNC)** of each cell's scRNA-seq profile and GAS profile.
