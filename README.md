@@ -29,12 +29,13 @@ ________________________________________________________________________________
 #### Methods for Dimension Reduction
 We have benchmarked. dimension-reduction methods. each method uses different approaches to put scRNA-seq and scATAC-seq cells into a joint latent space.  
 We have followed the online tutorial for each of the methods :
-Seuart() [Tutorial](https://satijalab.org/seurat/articles/seurat5_atacseq_integration_vignette)
-LIGER()  [Tutorial](https://htmlpreview.github.io/?https://github.com/welch-lab/liger/blob/master/vignettes/Integrating_scRNA_and_scATAC_data.html)
-scJoint()  [Tutorial](https://github.com/sydneybiox/scJoint/blob/main/tutorial/Analysis%20of%2010xGenomics%20data%20using%20scJoint.ipynb)
-Uniport() [Tutorial]https://uniport.readthedocs.io/en/latest/examples/PBMC/pbmc_integration.html)
-SIMBA() [Tutorial](https://simba-bio.readthedocs.io/en/latest/multiome_10xpmbc10k_integration.html)
-GLUE() [Tutorial](https://scglue.readthedocs.io/en/latest/tutorials.html)
-CoupleNMF
+1. Seuart() [Tutorial](https://satijalab.org/seurat/articles/seurat5_atacseq_integration_vignette)  
+2. LIGER()  [Tutorial](https://htmlpreview.github.io/?https://github.com/welch-lab/liger/blob/master/vignettes/Integrating_scRNA_and_scATAC_data.html)  
+3. scJoint()  [Tutorial](https://github.com/sydneybiox/scJoint/blob/main/tutorial/Analysis%20of%2010xGenomics%20data%20using%20scJoint.ipynb)  
+4. Uniport() [Tutorial](https://uniport.readthedocs.io/en/latest/examples/PBMC/pbmc_integration.html)  
+5. SIMBA() [Tutorial](https://simba-bio.readthedocs.io/en/latest/multiome_10xpmbc10k_integration.html)  
+6. GLUE() [Tutorial](https://scglue.readthedocs.io/en/latest/tutorials.html)  
+7. CoupleNMF  
+
 
  
