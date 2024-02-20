@@ -160,3 +160,19 @@ ASW_GAS[,i]<-PCA_ASW(Exp,GAS_list[[i]],true_label$SS)
 colnames(ASW_GAS)<-c("Signac","liger","cicero","maestro")
 saveRDS(ASW_GAS,"ASW_GAS_table.rds")
 ```
+
+### 4. group-wise correlation of expression and GASs
+```r
+# read in clusters
+label1<-readRDS("/data2/duren_lab/naqing/pipeline_building/Data_sets/pbmc/seurat_object_label/seurat_RNA_label.rds")
+label2<-readRDS("/data2/duren_lab/naqing/pipeline_building/Data_sets/HumanBrain/seuratobj_and_label/seurat_RNA_label.rds")
+label3<-readRDS("/data2/duren_lab/naqing/pipeline_building/Data_sets/MouseBrain/seuratobj_and_label/seurat_RNA_label.rds")
+# calculate the corelation
+tables1<-group_corr(Exp1,GAS_list1,as.numeric(label1))
+tables2<-group_corr(Exp2,GAS_list2,as.numeric(label2))
+tables3<-group_corr(Exp3,GAS_list3,as.numeric(label3))
+# save tables
+saveRDS(tables1,"pbmc_group_corr.rds") 
+saveRDS(tables2,"humanbrain_group_corr.rds") 
+saveRDS(tables3,"mousebrain_group_corr.rds") 
+```
