@@ -1,35 +1,35 @@
-## Gene expression presdict from ATAC-seq data
+## Gene_acitivity_score_calculating code, use pbmc10k data as example
 ### Libraries
 ```r
 library(Seurat)
 library(Signac)
-#library(EnsDb.Hsapiens.v86)   #require internet connection
+library(EnsDb.Hsapiens.v86)   #require internet connection
 library(cicero)
 library(MAESTRO)
 library(rliger)
 ```
 ### signac
 ```r
-#load the data
-counts1 <- Read10X_h5("/data/duren_lab/naqing/data/pbmc_10k/pbmc_granulocyte_sorted_10k_filtered_feature_bc_matrix.h5")
+# load the data
+counts1 <- Read10X_h5("/data2/duren_lab/naqing/pipeline_building/Data_sets/pbmc/pbmc_granulocyte_sorted_10k_filtered_feature_bc_matrix.h5")
 counts=counts1$Peaks
-### pre-made annotation
-# annotation <- GetGRangesFromEnsDb(ensdb = EnsDb.Hsapiens.v86)
-# seqlevelsStyle(annotation) <- "UCSC"
-# genome(annotation) <- "hg38"
-annotation<-readRDS("/data/duren_lab/naqing/Methods_Benchmark/annotations_EnsDb.Hsapiens.v86.RDS")
+# annotation
+annotation <- GetGRangesFromEnsDb(ensdb = EnsDb.Hsapiens.v86)
+seqlevelsStyle(annotation) <- "UCSC"
+genome(annotation) <- "hg38"
+# annotation<-readRDS("/data2/duren_lab/naqing/pipeline_building/Data_sets/annotation_files/annotation_EnsDb.Hsapiens.v86.rds") ## pre-made annotation
 chrom_assay <- CreateChromatinAssay(
   counts = counts,
   sep = c(":", "-"),
-  fragments="/data/duren_lab/naqing/data/pbmc_10k/filtered_feature_bc_matrix/fragment.tsv.gz",
+  fragments="/data2/duren_lab/naqing/pipeline_building/Data_sets/pbmc/pbmc_granulocyte_sorted_10k_atac_fragments.tsv.gz",
   min.cells = 0,
   min.features = 0,
 )
 pbmc.atac <- CreateSeuratObject(
   counts = chrom_assay,
   assay = "peaks"
+  annotation=annotation
 )
-Annotation(pbmc.atac)=annotation
 pbmc.atac <- RunTFIDF(pbmc.atac)
 pbmc.atac <- FindTopFeatures(pbmc.atac, min.cutoff = 'q0')
 pbmc.atac <- RunSVD(pbmc.atac)
@@ -38,14 +38,18 @@ gene.activities <- GeneActivity(pbmc.atac)
 ### LIGER
 bash
 ```bash
-sort -k1,1 -k2,2n -k3,3n GSM4138888_scATAC_BMMC_D5T1.fragments.tsv > atac_fragments.sort.bed
-sort -k 1,1 -k2,2n -k3,3n hg19_genes.bed > hg19_genes.sort.bed
-sort -k 1,1 -k2,2n -k3,3n hg19_promoters.bed > hg19_promoters.sort.bed
-```
-bedmap
-```bedmap
-bedmap --ec --delim "\t" --echo --echo-map-id hg19_promoters.sort.bed atac_fragments.sort.bed > atac_promoters_bc.bed
-bedmap --ec --delim "\t" --echo --echo-map-id hg19_genes.sort.bed atac_fragments.sort.bed > atac_genes_bc.bed
+# go to the folder with fragment files, sor fragment file
+cd /data2/duren_lab/naqing/pipeline_building/Data_sets/pbmc/
+sort -k1,1 -k2,2n -k3,3n pbmc_granulocyte_sorted_10k_atac_fragments.tsv > atac_fragments.sort.bed
+# get rid of special chromosomes
+awk '$1 !~ /JH|GL|KI/' atac_fragments.sort.bed > filtered_atac_fragments.sort.bed
+# sort annotation files
+sort -k 1,1 -k2,2n -k3,3n /data2/duren_lab/naqing/pipeline_building/Data_sets/annotation_files/Gene_Annotations_Hsapiens_v86.bed > EnsDb_Hsapiens_v86_genes.sort.bed
+sort -k 1,1 -k2,2n -k3,3n /data2/duren_lab/naqing/pipeline_building/Data_sets/annotation_files/Promoter_Annotations_Hsapiens_v86.bed > EnsDb_Hsapiens_v86_promoters.sort.bed
+# bedmap command to calculate overlapping elements between indexes and fragment output files:
+bedmap --ec --delim '\t' --echo --echo-map-id EnsDb_Hsapiens_v86_promoters.sort.bed filtered_atac_fragments.sort.bed > atac_promoters_bc.bed
+bedmap --ec --delim '\t' --echo --echo-map-id EnsDb_Hsapiens_v86_genes.sort.bed filtered_atac_fragments.sort.bed > atac_genes_bc.bed
+")
 ```
 R
 ```r
@@ -60,11 +64,15 @@ bc_filt <- names(bc_counts)[bc_counts > 1500]
 barcodes <- bc_filt
 gene.counts <- makeFeatureMatrix(genes.bc, barcodes)
 promoter.counts <- makeFeatureMatrix(promoters.bc, barcodes)
-gene.counts <- gene.counts[order(rownames(gene.counts)),]
-promoter.counts <- promoter.counts[order(rownames(promoter.counts)),]
-D5T1 <- gene.counts + promoter.counts
-colnames(D5T1)=paste0("D5T1_",colnames(D5T1))
-bmmc.rna <- read10X(sample.dirs = list("/path_to_sample"), sample.names = list("rna"))
+if(dim(promoter.counts)[1]>dim(gene.counts)[1]){
+promoter.counts <- promoter.counts[rownames(gene.counts),]
+}
+if(dim(promoter.counts)[1]<dim(gene.counts)[1]){
+gene.counts <- gene.counts[rownames(promoter.counts),]
+}
+atac <- gene.counts + promoter.counts
+liger<-as(atac, "dgCMatrix")
+
 ```
 ### cicero
 ```r
@@ -75,9 +83,12 @@ library(Signac)
 library(stringr)
 
 # read in matrix data using the Matrix package
-inputdata.10x <- Read10X_h5("/data2/duren_lab/naqing/data/MouseBrain/e18_mouse_brain_fresh_5k_filtered_feature_bc_matrix.h5")
+"/data2/duren_lab/naqing/pipeline_building/Data_sets/pbmc/pbmc_granulocyte_sorted_10k_filtered_feature_bc_matrix.h5")
+barcode_use<-read.table("/data2/duren_lab/naqing/data/pbmc_10k/barcode_use.txt")
 indata<-inputdata.10x$Peaks
-
+bar<-indata@Dimnames[[2]]
+idx<-match(barcode_use$V1,bar)
+indata<-indata[,idx]
 # binarize the matrix
 indata@x[indata@x > 0] <- 1
 
@@ -112,13 +123,13 @@ input_cds <- monocle3::detect_genes(input_cds)
 input_cds <- input_cds[Matrix::rowSums(exprs(input_cds)) != 0,] #Ensure there are no peaks included with zero reads
 
 #gene_anno
-gene_anno <- rtracklayer::readGFF("/data2/duren_lab/naqing/Methods_Benchmark/Cicero/gencode.vM25.annotation.gtf.gz")
+gene_anno <- rtracklayer::readGFF("/data2/duren_lab/naqing/pipeline_building/Data_sets/annotation_files/Homo_sapiens.GRCh38.105.gtf.gz")
 gene_anno$chromosome <- gene_anno$seqid
 gene_anno$gene <- gene_anno$gene_id
 gene_anno$transcript <- gene_anno$transcript_id
 gene_anno$symbol <- gene_anno$gene_name
 
-#### Add a column for the pData table indicating the gene if a peak is a promoter ####
+### Add a column for the pData table indicating the gene if a peak is a promoter ####
 # Create a gene annotation set that only marks the transcription start sites of 
 # the genes. We use this as a proxy for promoters.
 # To do this we need the first exon of each transcript
@@ -135,45 +146,45 @@ neg <- neg[order(neg$start, decreasing = TRUE),]
 neg <- neg[!duplicated(neg$transcript),] 
 neg$start <- neg$end - 1
 
-gene_annotation_sub <- rbind(pos, neg)
+gene_annotation<- rbind(pos, neg)
 
 # Make a subset of the TSS annotation columns containing just the coordinates 
 # and the gene name
-gene_annotation_sub <- gene_annotation_sub[,c("chromosome", "start", "end", "symbol")]
+gene_annotation_sub <- gene_annotation[,c("chromosome", "start", "end", "symbol")]
 
 # Rename the gene symbol column to "gene"
 names(gene_annotation_sub)[4] <- "gene"
-#gene_annotation_sub<- readRDS("/data/duren_lab/naqing/Methods_Benchmark/Cicero/gene_annotation_sub.rds")
+gene_annotation_sub <- subset(gene_annotation_sub, !grepl("GL|KI|MT",gene_annotation_sub[,1]))
+gene_annotation_sub [,1]<-paste0("chr",gene_annotation_sub[,1] )
+
 input_cds <- annotate_cds_by_site(input_cds, gene_annotation_sub)
-
-
 # make conn
-mm10<-readRDS("/data2/duren_lab/naqing/Methods_Benchmark/Cicero/mm10.rds")
-conns <- run_cicero(input_cds,mm10) 
+hg38<-readRDS("/data2/duren_lab/naqing/pipeline_building/Data_sets/annotation_files/hg38.rds")
+conns <- run_cicero(input_cds,hg38) 
 
 #### Generate gene activity scores ####
 # generate unnormalized gene activity matrix
 unnorm_ga <- build_gene_activity_matrix(input_cds, conns)
-
 # remove any rows/columns with all zeroes
 unnorm_ga <- unnorm_ga[!Matrix::rowSums(unnorm_ga) == 0, 
                        !Matrix::colSums(unnorm_ga) == 0]
-
 # make a list of num_genes_expressed
 num_genes <- pData(input_cds)$num_genes_expressed
 names(num_genes) <- row.names(pData(input_cds))
-
 # normalize
-cicero_gene_activities <- normalize_gene_activities(unnorm_ga, num_genes)
-saveRDS(cicero_gene_activities,"/data2/duren_lab/naqing/Benchmark_mouse_brain/GAS/cicero_GAS.rds")
+cicero_gene_activities <- normalize_gene_activities(unnorm_ga,num_genes)
 ```
 ### Maestro
 ```r
 library(Seurat)
 library(MAESTRO)
-inputdata.10x <- Read10X_h5("/data2/duren_lab/naqing/data/HumanBrain/human_brain_3k_filtered_feature_bc_matrix.h5")
-atac<- inputdata.10x$Peaks
 library(reticulate)
+inputdata.10x <- Read10X_h5("/data2/duren_lab/naqing/pipeline_building/Data_sets/pbmc/pbmc_granulocyte_sorted_10k_filtered_feature_bc_matrix.h5")
+atac<- inputdata.10x$Peaks
+barcode_use<-read.table("/data2/duren_lab/naqing/data/pbmc_10k/barcode_use.txt")
+bar<-atac@Dimnames[[2]]
+idx<-match(barcode_use$V1,bar)
+atac<-atac[,idx]
 use_python("/data2/duren_lab/naqing/conda_envs/R43/bin/python", required = TRUE)
 gas <- ATACCalculateGenescore(atac, organism = "GRCh38")
 ```
