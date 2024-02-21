@@ -55,15 +55,17 @@ R
 ```r
 genes.bc <- read.table(file = "atac_genes_bc.bed", sep = "\t", as.is = c(4,7), header = FALSE)
 promoters.bc <- read.table(file = "atac_promoters_bc.bed", sep = "\t", as.is = c(4,7), header = FALSE)
-bc <- genes.bc[,7]
-bc_split <- strsplit(bc,";")
-bc_split_vec <- unlist(bc_split)
-bc_unique <- unique(bc_split_vec)
-bc_counts <- table(bc_split_vec)
-bc_filt <- names(bc_counts)[bc_counts > 1500]
-barcodes <- bc_filt
-gene.counts <- makeFeatureMatrix(genes.bc, barcodes)
-promoter.counts <- makeFeatureMatrix(promoters.bc, barcodes)
+barcode_use<-read.table("/data2/duren_lab/naqing/data/pbmc_10k/barcode_use.txt")
+#commented code used for filter barcode. In our case, the barcode is fixed.
+#bc <- genes.bc[,7]
+#bc_split <- strsplit(bc,";")
+#bc_split_vec <- unlist(bc_split)
+#bc_unique <- unique(bc_split_vec)
+#bc_counts <- table(bc_split_vec)
+#bc_filt <- names(bc_counts)[bc_counts > 1500]
+#barcodes <- bc_filt
+gene.counts <- makeFeatureMatrix(genes.bc, barcode_use$V1)
+promoter.counts <- makeFeatureMatrix(promoters.bc, barcode_use$V1)
 if(dim(promoter.counts)[1]>dim(gene.counts)[1]){
 promoter.counts <- promoter.counts[rownames(gene.counts),]
 }
