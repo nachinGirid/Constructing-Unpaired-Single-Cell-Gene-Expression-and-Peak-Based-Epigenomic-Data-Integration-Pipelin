@@ -60,18 +60,8 @@ gene.activities[[4]]<-readRDS("/data2/duren_lab/naqing/pipeline_building/Gene_Ac
 
 for (i in 1:4){
     for (j in 1:4){
-        start_main = Sys.time()
-        mem_run <- profmem({
         embeddings <- Run.seurat.DMR(rna,atac,gene.activities[[i]],1:DIMS[j])
         saveRDS(embeddings,paste("pbmc_",gas_names[i],"_",DIMs[j],"embeds.rds"))
-        finish_main = Sys.time()
-        run_time <- finish_main - start_main
-        print(paste("run_time:",run_time))
-        total_memory <- sum(mem_run$bytes[!is.na(mem_run$bytes)])
-        peak_memory <- max(mem_run$bytes[!is.na(mem_run$bytes)])
-        print(paste(gas_names[i],DIMs[j],"total_run_mem:",total_memory))
-        print(paste(gas_names[i],DIMs[j],"peak_run_mem:",peak_memory))
-        })
       }
     }
 ```
