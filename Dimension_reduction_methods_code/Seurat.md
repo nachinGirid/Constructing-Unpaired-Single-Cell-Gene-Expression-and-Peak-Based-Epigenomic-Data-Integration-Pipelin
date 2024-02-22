@@ -1,4 +1,5 @@
 ## Seurat scRNA and scATAC integrating code  
+(pbmc data as example)
 
 This script is based on the Seurat Tutorial [Integrating scRNA-seq and scATAC-seq data](https://satijalab.org/seurat/articles/seurat5_atacseq_integration_vignette)  
 To simplify the process of using different gene activity scores and different dimensions, we made a function _Run.seurat.DMR_, which takes Seuart preprocessed RNA and ATAC Seurat object and corresponding gene activity score and requested size of embedding in, and output reduced RNA and ATAC embeddings.
