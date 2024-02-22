@@ -53,3 +53,40 @@ write_csv_scJoint(cellType_list =  list(rna = celltype$x),
                   csv_list = c("rna_label.csv")
                   )
 ```
+**2. Generate .npz files.** This step is done on python
+```python
+import process_db
+import h5py
+import pandas as pd
+import numpy as np
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
+import seaborn as sns
+import random
+random.seed(1)
+rna_h5_files = ["data_10x/pbmc_rna.h5"] 
+rna_label_files = ["data_10x/rna_label.csv"] # csv file
+
+atac_h5_files = ["data_10x/pbmc_atac.h5"]
+atac_label_files = []
+
+process_db.data_parsing(rna_h5_files, atac_h5_files)
+rna_label = pd.read_csv(rna_label_files[0], index_col = 0)
+rna_label
+print(rna_label.value_counts(sort = False))
+process_db.label_parsing(rna_label_files, atac_label_files)
+```
+**3. Edit config.py** Before main.py     
+Give the following information:  
+1.  Number of clusters
+2.  Number of common genes
+3.  The paths to the input file
+```py
+self.number_of_class = 11
+self.input_size = 15463
+self.rna_paths = ['data_10x/pbmc_rna.npz']
+self.rna_labels = ['data_10x/rna_label.txt']		
+self.atac_paths = ['data_10x/pbmc_atac.npz']
+```
+
+**4. Run main.py** 
