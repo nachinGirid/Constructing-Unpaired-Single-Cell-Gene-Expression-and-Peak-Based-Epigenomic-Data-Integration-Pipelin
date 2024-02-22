@@ -1,4 +1,4 @@
-## Seurat scRNA and scATAC integrating code  
+## Seurat dimension reduction code
 (pbmc data as example)
 
 This script is based on the Seurat Tutorial [Integrating scRNA-seq and scATAC-seq data](https://satijalab.org/seurat/articles/seurat5_atacseq_integration_vignette)  
