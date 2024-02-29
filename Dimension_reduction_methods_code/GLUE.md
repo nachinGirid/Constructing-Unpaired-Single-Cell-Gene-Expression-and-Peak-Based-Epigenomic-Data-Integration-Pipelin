@@ -68,25 +68,13 @@ scglue.data.get_gene_annotation(
     rna, gtf="/data2/duren_lab/naqing/pipeline_building/Data_sets/annotation_files/hg38_patch_hapl_scaff.annotation.gtf.gz",
     gtf_by="gene_name"
 )
-rna.var.loc[:, ["chrom", "chromStart", "chromEnd"]].head()
-rna.var.dtypes
-rna.var['artif_dupl']=False
-
 # Remove rows with NA values in the 'chrom' column  
 rna.var.dropna(subset=['chrom'], inplace=True)
 gene_names_to_keep = rna.var.index.tolist()
 rna = rna[:, gene_names_to_keep]
 rna.var.loc[:, ["chrom", "chromStart", "chromEnd"]].head()
-rna.var.dtypes
-rna.var['artif_dupl']=False
 
 # store peak location in ATAC
-split = atac.var_names.str.split(r"[:-]")
-atac.var["chrom"] = split.map(lambda x: x[0])
-atac.var["chromStart"] = split.map(lambda x: x[1]).astype(int)
-atac.var["chromEnd"] = split.map(lambda x: x[2]).astype(int)
-atac.var.head()
-# atac
 split = atac.var_names.str.split(r"[:-]")
 atac.var["chrom"] = split.map(lambda x: x[0])
 atac.var["chromStart"] = split.map(lambda x: x[1]).astype(int)
