@@ -1,24 +1,42 @@
 # GLUE
-## convert seurat object to h5ad
+## Prepare data as h5ad  
+Basically make SeuratObject and then make SingleCellExperiment, then write it to h5ad.  
 ```r
 library(Seurat)
 library(zellkonverter)
-counts <- Read10X_h5('/data2/duren_lab/naqing/data/HumanBrain/human_brain_3k_filtered_feature_bc_matrix.h5')
+library(SingleCellExperiment)
+h5_file="/data2/duren_lab/naqing/pipeline_building/Data_sets/pbmc/pbmc_granulocyte_sorted_10k_filtered_feature_bc_matrix.h5"
+counts <- Read10X_h5(h5_file)
+pbmc.rna<-counts$`Gene Expression`
+pbmc.atac<-counts$`Peak`
+
+# filter cells by barcode
+barcode_use<-read.table("/data2/duren_lab/naqing/data/pbmc_10k/barcode_use.txt")
+bar<-pbmc.rna@Dimnames[[2]]
+idx<-match(barcode_use$V1,bar)
+pbmc.rna<-pbmc.rna[,idx]
+
+bar<-pbmc.atac@Dimnames[[2]]
+idx<-match(barcode_use$V1,bar)
+pbmc.atac<-pbmc.atac[,idx]
 
 rna <- CreateSeuratObject(
-  counts = counts$`Gene Expression`,
+  counts = pbmc.rna,
   assay = "RNA"
 )
 
 atac <- CreateSeuratObject(
-  counts = counts$`Peak`,
+  counts = pbmc.atac,
   assay = "ATAC"
 )
-rna<-as.SingleCellExperiment(pbmc.rna)
-atac<-as.SingleCellExperiment(pbmc.atac)
+atac_fil<-atac[rowSums(atac)!=0,]
+rna_fil<-rna[rowSums(rna)!=0,]
 
-writeH5AD(rna,"/data/duren_lab/naqing/Methods_Benchmark/GLUE/pbmc.rna.h5ad")
-writeH5AD(atac,"/data/duren_lab/naqing/Methods_Benchmark/GLUE/pbmc.atac.h5ad")
+RNA<-as.SingleCellExperiment(rna_fil)
+ATAC<-as.SingleCellExperiment(atac_fil)
+
+writeH5AD(RNA,"pbmc.rna.h5ad")
+writeH5AD(ATAC,"pbmc.atac.h5ad")
 ```
 ## Stage 1: Data processing
 ### preprocess data
@@ -27,9 +45,7 @@ import anndata as ad
 import networkx as nx
 import scanpy as sc
 import scglue
-from matplotlib import rcParams
-scglue.plot.set_publication_params()
-rcParams["figure.figsize"] = (4, 4)
+
 rna = ad.read_h5ad("pbmc.rna.h5ad")
 atac = ad.read_h5ad("pbmc.atac.h5ad")
 # RNA
@@ -49,12 +65,27 @@ scglue.data.lsi(atac, n_components=100, n_iter=15)
 ```python
 # RNA obtain coordinate
 scglue.data.get_gene_annotation(
-    rna, gtf="/data/duren_lab/naqing/Methods_Benchmark/GLUE/gencode.v41.chr_patch_hapl_scaff.basic.annotation.gtf.gz",
+    rna, gtf="/data2/duren_lab/naqing/pipeline_building/Data_sets/annotation_files/hg38_patch_hapl_scaff.annotation.gtf.gz",
     gtf_by="gene_name"
 )
 rna.var.loc[:, ["chrom", "chromStart", "chromEnd"]].head()
 rna.var.dtypes
 rna.var['artif_dupl']=False
+
+# Remove rows with NA values in the 'chrom' column  
+rna.var.dropna(subset=['chrom'], inplace=True)
+gene_names_to_keep = rna.var.index.tolist()
+rna = rna[:, gene_names_to_keep]
+rna.var.loc[:, ["chrom", "chromStart", "chromEnd"]].head()
+rna.var.dtypes
+rna.var['artif_dupl']=False
+
+# store peak location in ATAC
+split = atac.var_names.str.split(r"[:-]")
+atac.var["chrom"] = split.map(lambda x: x[0])
+atac.var["chromStart"] = split.map(lambda x: x[1]).astype(int)
+atac.var["chromEnd"] = split.map(lambda x: x[2]).astype(int)
+atac.var.head()
 # atac
 split = atac.var_names.str.split(r"[:-]")
 atac.var["chrom"] = split.map(lambda x: x[0])
@@ -65,9 +96,12 @@ atac.var.head()
 guidance = scglue.genomics.rna_anchored_guidance_graph(rna, atac)
 guidance
 scglue.graph.check_graph(guidance, [rna, atac])
+# save data
+rna.write("rna-pp.h5ad", compression="gzip")
+atac.write("atac-pp.h5ad", compression="gzip")
+nx.write_graphml(guidance, "guidance_pbmc.graphml.gz")
 ```
 ## Stage 2: Model training
-Read in stored data if needed:
 ```python
 rna = ad.read_h5ad("rna-pp.h5ad")
 atac = ad.read_h5ad("atac-pp.h5ad")
