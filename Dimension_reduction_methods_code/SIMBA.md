@@ -6,7 +6,7 @@ import anndata as ad
 import simba as si
 import numpy as np
 si.__version__
-workdir = 'multiome_10xpmbc10k_integration'
+workdir = '/data2/duren_lab/naqing/pipeline_building/Dimension_reduction/code/SIMBA/pbmc/'
 si.settings.set_workdir(workdir)
 ```
 Unlike the tutorial, we just read in the RNA and ATAC
