@@ -1,5 +1,5 @@
 ## Dimension reduction embedding evaluation.   
-Here we use PBMC 10K's Seurat recult embedding, CCA (15 dimension)using signac GAS, as an example, showing the joint embedding evaluation steps.  
+Here we use PBMC 10K's Seurat resulting embedding, CCA (15 dimension)using signac GAS, as an example, showing the joint embedding evaluation steps.  
 
 **Preprocessing**  
 
