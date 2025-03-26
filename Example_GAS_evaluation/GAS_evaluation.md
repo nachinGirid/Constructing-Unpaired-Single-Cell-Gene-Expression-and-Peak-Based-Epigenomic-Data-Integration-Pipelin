@@ -1,4 +1,4 @@
-### GAS evaluation  
+## GAS evaluation  
 Here, we use PBMC 10K's 3 methods' result as an example to show how the Gene activity score(GAS) calculating methods are evaluated.  
 (The MAESTRO GAS file is too big to upload, so we only use the other methods to show examples.)
 Suppose we already have the GASs calculated using different methods.  
