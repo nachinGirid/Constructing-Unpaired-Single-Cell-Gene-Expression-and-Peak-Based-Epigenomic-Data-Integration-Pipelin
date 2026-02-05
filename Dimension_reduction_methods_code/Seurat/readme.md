@@ -26,8 +26,3 @@ We show how to:
 - `processed_data/pbmc/seurat_RNA_label.rds`  
   A named factor of Seurat cluster IDs (names = RNA cell barcodes).
 
-**Run**
-```bash
-Rscript scripts/00_make_seurat_rna_labels.R \
-  data/pbmc_rna_raw_counts.rds \
-  processed_data/pbmc/seurat_RNA_label.rds
