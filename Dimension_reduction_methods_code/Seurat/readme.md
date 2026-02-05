@@ -1,4 +1,4 @@
-# Seurat (RNA labels + preprocessing objects)
+# Seurat (Dimension reduction, including making the preprocessing Seurat objects and Seurat RNA label generating)
 
 This folder contains the **Seurat preprocessing and Seurat CCA scripts** used in our benchmark pipeline.  
 They provide two reusable inputs for downstream steps (Seurat object and RNA label that will be used as a reference label to be transferred by the label transfer method in the clustering/labeling step).
