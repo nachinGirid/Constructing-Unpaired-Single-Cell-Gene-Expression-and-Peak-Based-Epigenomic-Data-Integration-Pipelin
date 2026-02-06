@@ -29,8 +29,8 @@ rna  <- CreateSeuratObject(counts = rna_mat, min.cells = 3)
 atac <- CreateSeuratObject(counts = atac_mat, assay = "ATAC", min.cells = 3)
 
 # ---- save raw Seurat ----
-saveRDS(rna, "seurat_rna_obj.rds")
-saveRDS(atac, "seurat_atac_obj.rds")
+saveRDS(rna,  file.path(outdir, "seurat_rna_obj.rds"))
+saveRDS(atac, file.path(outdir, "seurat_atac_obj.rds"))
 
 
 # ---- SCE + H5AD ----
@@ -41,8 +41,8 @@ rna_fil   <- subset(rna,  features = rownames(rna)[rna_keep])
 atac_fil  <- subset(atac, features = rownames(atac)[atac_keep])
 RNA_sce  <- as.SingleCellExperiment(rna_fil)
 ATAC_sce <- as.SingleCellExperiment(atac_fil)
-zellkonverter::writeH5AD(RNA_sce, "rna_fil_rowsum0.h5ad")
-zellkonverter::writeH5AD(ATAC_sce, "atac_fil_rowsum0.h5ad")
+zellkonverter::writeH5AD(RNA_sce,  file.path(outdir, "rna_fil_rowsum0.h5ad"))
+zellkonverter::writeH5AD(ATAC_sce, file.path(outdir, "atac_fil_rowsum0.h5ad"))
 
 # ---- independent preprocessing ----
 # RNA
@@ -57,34 +57,7 @@ atac <- RunTFIDF(atac)
 atac <- FindTopFeatures(atac, min.cutoff = "q0")
 atac <- RunSVD(atac)
 
-saveRDS(rna, "Seurat_preprocess_rna_obj.rds")
-saveRDS(atac,  "Seurat_preprocess_atac_obj.rds")
+saveRDS(rna,  file.path(outdir, "Seurat_preprocess_rna_obj.rds"))
+saveRDS(atac, file.path(outdir, "Seurat_preprocess_atac_obj.rds"))
 
-
-
-### some method needs Gene activity score (GAS) as h5ad, we show exampl of a pbmc signac GAS convert it to h5ad:
-suppressMessages({
-  library(Seurat)
-  library(SingleCellExperiment)
-  library(zellkonverter)
-  library(Matrix)
-})
-
-ds  <- "pbmc"
-gas <- "signac"
-
-gas_mat <- readRDS("pbmc_signac.rds")  # dgCMatrix genes x cells
-
-atac <- CreateSeuratObject(counts = gas_mat, assay = "ATAC")
-
-# filter zero-row genes (required by many tools)
-cnt <- GetAssayData(atac, assay = "ATAC", slot = "counts")
-keep_feat <- Matrix::rowSums(cnt) != 0
-if (any(!keep_feat)) {
-  atac <- subset(atac, features = rownames(atac)[keep_feat])
-}
-
-ATAC_sce <- as.SingleCellExperiment(atac)
-
-# write .h5ad
-zellkonverter::writeH5AD(ATAC_sce,sprintf("%s_%s.h5ad", ds, gas))
+cat("Done:", ds, "->", outdir, "\n")
