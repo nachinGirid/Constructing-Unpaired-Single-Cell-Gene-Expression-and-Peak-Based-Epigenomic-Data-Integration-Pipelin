@@ -1,5 +1,11 @@
 contrastive_sim<-function(dim_rna,dim_atac,temperature=1){
+    #this one can handle the embedding have all zero row for cells
     library(Matrix)
+    dim_rna=dim_rna[rowSums(dim_rna)!=0,]
+    dim_atac=dim_atac[rowSums(dim_atac)!=0,]
+    common_cell<-intersect(rownames(dim_rna),rownames(dim_atac))
+    dim_atac=dim_atac[common_cell,]
+    dim_rna=dim_rna[common_cell,]
     ncell=dim(dim_rna)[1]
     dd_sparse <- sparseMatrix(i = 1:ncell, j = 1:ncell, x = rep(1, ncell), dims = c(ncell, ncell))
     zero_sparse_matrix <- sparseMatrix(i = integer(0), j = integer(0), dims = c(ncell, ncell))
