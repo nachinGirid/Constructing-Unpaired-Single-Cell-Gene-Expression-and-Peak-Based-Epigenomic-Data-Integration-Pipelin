@@ -5,24 +5,7 @@ ________________________________________________________________________________
 - Gene activity score method 
 - Dimension reduction method
 - Clustering and labeling methods
-### 12 sets of paired multi-omic data are used in the benchmarking step.  
-| Tissue / Dataset | Species | Genome | Cells | Data Modality |
-|---|---|---|---:|---|
-| PBMC | Human | hg38 | 9,543 | scRNA-seq + scATAC-seq |
-| Human brain | Human | hg38 | 3,332 | scRNA-seq + scATAC-seq |
-| Mouse brain E18 | Mouse | mm10 | 4,881 | scRNA-seq + scATAC-seq |
-| Bone marrow (NeurIPS 2021) | Human | hg38 | 69,249 | scRNA-seq + scATAC-seq |
-| Human kidney cancer | Human | hg38 | 22,772 | scRNA-seq + scATAC-seq |
-| Small intestine | Human | hg38 | 10,640 | scRNA-seq + scATAC-seq |
-| Mouse kidney cancer | Mouse | mm10 | 14,652 | scRNA-seq + scATAC-seq |
-| Mouse skin | Mouse | mm10 | 34,774 | scRNA-seq + scATAC-seq |
-| Mouse brain | Mouse | mm10 | 3,293 | scRNA-seq + scATAC-seq |
-| Mouse frontal cortex & hippocampus (H3K4me1) | Mouse | mm10 | 12,962 | scRNA-seq + histone ChIP-seq |
-| Mouse frontal cortex & hippocampus (H3K4me3) | Mouse | mm10 | 7,465 | scRNA-seq + histone ChIP-seq |
-| Mouse frontal cortex & hippocampus (H3K27ac) | Mouse | mm10 | 11,749 | scRNA-seq + histone ChIP-seq |
-
-
-### At each stage, conduct all possible approaches, and evaluate the results using evaluation matrices(Methods).
+### At each stage, conduct all possible combinations from different steps and evaluate the results using evaluation matrices(Methods).
 ___________________________________________________________________________________________________________________________________________________________________________
 ## 1. Gene activity score
 #### Methods for Gene Activity Score (GAS)
