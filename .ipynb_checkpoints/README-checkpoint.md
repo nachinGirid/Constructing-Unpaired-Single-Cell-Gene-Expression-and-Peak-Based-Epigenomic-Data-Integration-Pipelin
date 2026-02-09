@@ -56,9 +56,9 @@ We benchmarked multiple strategies for clustering and transferring RNA-derived l
 2. **Average label consistency** percentage of label match, per cluster ( average of two percentages: for each cluster RNA cluster, percentage of matched ATAC cells with the same label. Calculate the same for ATAC. Then, we get the mean of all RNA clusters and all ATAC clusters. )
 ___________________________________________________________________________________________________________________________________________________________________________
 
-# Script examples (PBMC 10k as an example dataset)
+# Script examples 
 
-This section provides end-to-end example scripts using **PBMC 10k** to demonstrate:
+This section provides example scripts to demonstrate:
 - Running each method (GAS → dimension reduction → clustering/labeling)
 - Evaluating outputs
 
@@ -67,7 +67,7 @@ ________________________________________________________________________________
 ## Running the methods
 
 1. **Gene activity score (GAS) calculation**  
-   - [Example script](https://github.com/nachinGirid/Benchmark_scRNA_scATAC_integration_methods/blob/main/gene_acitivity_score_calculate_example.md)
+   - [Example script](PLACEHOLDER)
 
 2. **Dimension reduction (joint embedding)**  
    - [Example script (placeholder)](PLACEHOLDER_DIMENSION_REDUCTION_SCRIPT_LINK)  
@@ -75,7 +75,7 @@ ________________________________________________________________________________
 
 3. **Clustering & labeling / label transfer**  
    - [Example script (placeholder)](PLACEHOLDER_CLUSTERING_LABELING_SCRIPT_LINK)  
-   - *Planned coverage:* Seurat anchors / FigR / Leiden / KNN / OT (Moscot)
+   - *Planned coverage:*   OT (Moscot)/FigR /Leiden / KNN / 
 
 ___________________________________________________________________________________________________________________________________________________________________________
 

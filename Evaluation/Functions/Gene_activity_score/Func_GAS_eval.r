@@ -1,3 +1,4 @@
+####################### Make gene cell common ##################
 set_common_gene<-function(Gene_expression,GAS_list){
 # Gene_expression is gene expression data matrix
 # GAS_list is a list contain GAS calculated by different methods
@@ -64,7 +65,7 @@ unify_genes_cells <- function(Gene_expression, GAS_list, genes = NULL, cells = N
 size_unify <- unify_genes_cells
 
 
-
+###################################################### Metric1 ######################################################  
 GAS_Exp_Corr<-function(Exp,GAS){
 
 # calculate for one method each time, put gene activity list into one list and run for loop
@@ -91,7 +92,7 @@ print("make sure the rows are genes and columns are cells!")
 
     return(list(corr, corr_high,corr_low))
     }
-
+## metric1_apend
 GAS_Exp_Corr_by_celltype <- function(Exp, GAS, celltype) {
   # calculate for one method each time
   # rows = genes, cols = cells
@@ -150,11 +151,7 @@ GAS_Exp_Corr_by_celltype <- function(Exp, GAS, celltype) {
   return(ct_corr)
 }
                         
-                        
-                        
-                        
-                        
-                        
+###################################################### Metric 2######################################################                          
 LNC<-function(Exp,GAS,block=20){
     #local neighborhood consistancy
     # calculate jaccard similarity to cell itself in two modality
@@ -224,14 +221,11 @@ LNC<-function(Exp,GAS,block=20){
     
     return(self_SNN)
 }
-
-
-
-PCA_ASW <- function(GAS, true_label, n_pcs = 15, scale_factor = 1e6) {
+###################################################### Metric3 ######################################################  
+PCA_ASW <- function(GAS, true_label, n_pcs = 15, scale_factor = 1e4) {
   # GAS: genes x cells
   stopifnot(length(true_label) == ncol(GAS))
   suppressPackageStartupMessages(library(cluster))
-  
   # Keep factor mapping consistent
   labs_factor <- factor(true_label)
   labs  <- as.integer(labs_factor)       # 1..K
@@ -242,24 +236,17 @@ PCA_ASW <- function(GAS, true_label, n_pcs = 15, scale_factor = 1e6) {
   keep <- !is.na(sds) & sds > 0
   gas_fil <- GAS[keep, , drop = FALSE]
   
-  # 2) Library normalization (CPM-ish, default 1e6)
-  csum <- colSums(gas_fil)
-  scaling_factor <- csum / scale_factor
-  gas_lib_norm <- sweep(gas_fil, 2, scaling_factor, FUN = "/")
-  
-  # 3) Log-normalization
-  gas_norm <- log1p(gas_lib_norm)
-  
-  # 4) Transpose: rows = cells, cols = genes
-  X <- t(gas_norm)
-  
-  # 5) PCA on cells
-  pc <- prcomp(X, center = TRUE, scale. = TRUE)
-  k  <- min(ncol(pc$x), n_pcs)
-  pcx <- pc$x[, seq_len(k), drop = FALSE]
-  
+  # 2) seurat standard
+  library(Seurat)
+  obj<- CreateSeuratObject(counts = gas_fil)
+  obj <- NormalizeData(obj,scale.factor = scale_factor)
+  obj <- FindVariableFeatures(obj,nfeatures = 2000)
+  obj <- ScaleData(obj)
+  obj <- RunPCA(obj,features = VariableFeatures(obj))
+  pca<-obj@reductions$pca@ cell.embeddings
+  pca_15=pca[,1:n_pcs]
   # 6) Distances & silhouette
-  d  <- dist(pcx)
+  d   <- dist(pca_15)
   si <- silhouette(labs, d)    # si[,3] = silhouette width per cell
   
   # 7) Mean ASW per cell type (in lvls order)
@@ -270,46 +257,3 @@ PCA_ASW <- function(GAS, true_label, n_pcs = 15, scale_factor = 1e6) {
   
   return(res)
 }
-
-
-PCA_ASW_cicero <- function(GAS, true_label, n_pcs = 15, log_transform = FALSE) {
-  # GAS: genes x cells, *already* normalized by cicero::normalize_gene_activities
-  stopifnot(length(true_label) == ncol(GAS))
-  suppressPackageStartupMessages(library(cluster))
-
-  # consistent factor mapping
-  labs_factor <- factor(true_label)
-  labs <- as.integer(labs_factor)   # 1..K
-  lvls <- levels(labs_factor)
-
-  # 1) Filter zero-variance genes
-  sds <- apply(GAS, 1, stats::sd)
-  keep <- !is.na(sds) & sds > 0
-  GAS_f <- GAS[keep, , drop = FALSE]
-
-  # 2) Optional log1p (often OK to skip for Cicero)
-  if (log_transform) {
-    GAS_f <- log1p(GAS_f)
-  }
-
-  # 3) Transpose: rows = cells, cols = genes
-  X <- t(GAS_f)
-
-  # 4) PCA with centering & scaling
-  pc <- prcomp(X, center = TRUE, scale. = TRUE)
-  k  <- min(ncol(pc$x), n_pcs)
-  pcx <- pc$x[, seq_len(k), drop = FALSE]
-
-  # 5) Distances & silhouette
-  d  <- dist(pcx)
-  si <- silhouette(labs, d)   # si[,3] = silhouette width per cell
-
-  # 6) Mean ASW per cell type in lvls order
-  means <- tapply(si[, 3], INDEX = labs, FUN = mean, na.rm = TRUE)
-  res <- matrix(as.numeric(means), ncol = 1)
-  rownames(res) <- lvls   # ✅ correct mapping label index -> level name
-  colnames(res) <- "ASW"
-
-  return(res)
-}
-

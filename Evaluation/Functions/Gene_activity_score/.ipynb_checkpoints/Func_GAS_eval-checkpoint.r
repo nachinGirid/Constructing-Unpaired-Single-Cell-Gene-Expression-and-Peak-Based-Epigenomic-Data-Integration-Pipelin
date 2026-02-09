@@ -1,4 +1,4 @@
-###################################################### Make gene cell common ##############################################
+####################### Make gene cell common ##################
 set_common_gene<-function(Gene_expression,GAS_list){
 # Gene_expression is gene expression data matrix
 # GAS_list is a list contain GAS calculated by different methods
