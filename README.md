@@ -60,7 +60,7 @@ ________________________________________________________________________________
 
 This section provides example scripts to demonstrate:
 - Running each method (GAS → dimension reduction → clustering/labeling)
-- Evaluating outputs
+- Evaluating outputs : GAS| Joint embeddings | RNA, and ATAC clustering labels
 
 ___________________________________________________________________________________________________________________________________________________________________________
 
