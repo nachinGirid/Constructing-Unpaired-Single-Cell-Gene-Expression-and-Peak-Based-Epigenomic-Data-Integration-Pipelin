@@ -10,7 +10,7 @@ The clustering approaches implemented here are:
 2. **Leiden clustering**
 3. **MOSCOT optimal-transport–based label transfer**
 4. **FigR Anchor–based label transfer**
-(**Seurat Anchor–based label transferring part was included in Seurat dimension reduction script**)
+- (**Seurat Anchor–based label transferring part was included in Seurat dimension reduction script**)
 
 Each script is provided as a **minimal reference implementation** with a fixed
 example data and. method setting and can be adapted by editing parameters at the top of the file.
